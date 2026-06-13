@@ -506,15 +506,40 @@ async function loadScores() {
       const awayHT = am.score?.halfTime?.away;
       const minute = am.minute;
 
-      // หา match ที่ตรงกันใน MATCHES array
+      // หา match โดยใช้วันที่ UTC จาก API เทียบกับ dateKey ของ MATCHES
+      // am.utcDate เช่น "2026-06-11T21:00:00Z"
+      const apiDateUTC = am.utcDate ? am.utcDate.substring(0,10) : '';
+      // แปลง UTC → Thai dateKey (UTC+7)
+      let apiThaiDateKey = '';
+      if (am.utcDate) {
+        const apiD = new Date(am.utcDate);
+        const thaiD = new Date(apiD.getTime() + 7*3600000);
+        apiThaiDateKey = thaiD.getUTCFullYear() + '-' +
+          String(thaiD.getUTCMonth()+1).padStart(2,'0') + '-' +
+          String(thaiD.getUTCDate()).padStart(2,'0');
+      }
+
+      // Match โดย dateKey + ชื่อทีม (ยืดหยุ่น)
       const match = MATCHES.find(m => {
-        const t1clean = m.t1.replace(/[🇦-🇿󠁧󠁢󠁳󠁣󠁴󠁿🏴]/gu, '').trim();
-        const t2clean = m.t2.replace(/[🇦-🇿󠁧󠁢󠁳󠁣󠁴󠁿🏴]/gu, '').trim();
-        return (t1clean.includes(homeTh) || t1clean.includes(awayTh)) &&
-               (t2clean.includes(homeTh) || t2clean.includes(awayTh) || m.t2 === '');
+        if (m.dateKey !== apiThaiDateKey) return false;
+        const t1clean = m.t1.replace(/\p{Emoji_Presentation}/gu, '').replace(/[^\u0E00-\u0E7Fa-zA-Z ]/g,'').trim();
+        const t2clean = m.t2.replace(/\p{Emoji_Presentation}/gu, '').replace(/[^\u0E00-\u0E7Fa-zA-Z ]/g,'').trim();
+        // ลอง match ชื่อไทย
+        if (homeTh && t1clean.includes(homeTh)) return true;
+        if (awayTh && t1clean.includes(awayTh)) return true;
+        // fallback: match ชื่อ EN บางส่วน
+        const homeShort = homeEn.split(' ').pop();
+        const awayShort = awayEn.split(' ').pop();
+        if (t1clean.toLowerCase().includes(homeShort.toLowerCase())) return true;
+        if (t1clean.toLowerCase().includes(awayShort.toLowerCase())) return true;
+        return false;
       });
 
-      if (!match) return;
+      if (!match) {
+        // log เพื่อ debug
+        if (status === 'FINISHED') console.log('No match found:', homeEn, 'vs', awayEn, apiThaiDateKey);
+        return;
+      }
 
       // อัพเดตสกอร์และสถานะ
       if (status === 'IN_PLAY' || status === 'PAUSED') {
@@ -524,8 +549,11 @@ async function loadScores() {
         match.liveStatus = `🔴${minStr}`;
         updatedCount++;
       } else if (status === 'FINISHED') {
-        if (homeScore !== null && awayScore !== null) {
-          match.sc = `${homeScore}-${awayScore}`;
+        // ลอง fullTime ก่อน ถ้าไม่มีใช้ regularTime หรือ penalties
+        const fh = am.score?.fullTime?.home ?? am.score?.regularTime?.home;
+        const fa = am.score?.fullTime?.away ?? am.score?.regularTime?.away;
+        if (fh !== null && fh !== undefined && fa !== null && fa !== undefined) {
+          match.sc = `${fh}-${fa}`;
           match.liveStatus = '✅';
           updatedCount++;
         }
