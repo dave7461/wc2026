@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A1628">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="WC2026 🇹🇭">
+<meta name="description" content="ตารางฟุตบอลโลก 2026 เวลาประเทศไทย">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>⚽ World Cup 2026 · เวลาไทย</title>
+<style>
+  :root {
+    --bg: #060E1F;
+    --surface: #0D1B2E;
+    --border: #1A2E4A;
+    --accent: #1565C0;
+    --accent2: #4A90D9;
+    --text: #E8EDF5;
+    --muted: #4A6FA5;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, 'Segoe UI', sans-serif; overscroll-behavior: none; }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(160deg, #0A1628 0%, #0D2137 60%, #0A1628 100%);
+    border-bottom: 1px solid var(--border);
+    padding: calc(12px + var(--safe-top)) 16px 12px;
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(10px);
+  }
+  .header-top { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .header-ball { font-size: 28px; animation: spin 8s linear infinite; }
+  @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+  .header-title { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+  .header-sub { font-size: 10px; color: var(--accent2); letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; }
+  .header-info { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+  /* SEARCH + FILTER */
+  .controls { padding: 10px 14px; background: #0A1628; border-bottom: 1px solid var(--border); position: sticky; top: calc(72px + var(--safe-top)); z-index: 99; }
+  .search-box { width: 100%; background: #111D2E; border: 1px solid var(--border); border-radius: 10px; padding: 9px 14px; color: var(--text); font-size: 13px; outline: none; margin-bottom: 8px; }
+  .search-box::placeholder { color: var(--muted); }
+  .search-box:focus { border-color: var(--accent); }
+  .round-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+  .round-tabs::-webkit-scrollbar { display: none; }
+  .tab { white-space: nowrap; border: 1px solid var(--border); border-radius: 20px; padding: 5px 11px; font-size: 11px; font-weight: 600; cursor: pointer; background: #111D2E; color: var(--muted); transition: all 0.15s; }
+  .tab.active { background: var(--accent); color: #fff; border-color: #1976D2; }
+
+  /* MATCH LIST */
+  .list { padding: 12px 14px calc(80px + var(--safe-bottom)); }
+  .date-header { display: flex; align-items: center; gap: 8px; margin: 16px 0 8px; }
+  .date-line { flex: 1; height: 1px; background: var(--border); }
+  .date-label { font-size: 11px; font-weight: 700; color: var(--accent2); }
+  .date-label.today { color: #FFD740; }
+  .live-badge { background: #E53935; color: #fff; font-size: 8px; font-weight: 800; padding: 1px 5px; border-radius: 3px; letter-spacing: 0.8px; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* CARD */
+  .card { border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; border: 1px solid var(--border); position: relative; overflow: hidden; }
+  .card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+  .card.group::before { background: #1565C0; }
+  .card.r32::before { background: #0277BD; }
+  .card.r16::before { background: #2E7D32; }
+  .card.qf::before { background: #6D4C41; }
+  .card.sf::before { background: #4527A0; }
+  .card.third::before { background: #546E7A; }
+  .card.final::before { background: linear-gradient(90deg, #E65100, #FFD740, #E65100); height: 3px; }
+
+  .card.group { background: #0A1E3C; }
+  .card.r32 { background: #091B2E; }
+  .card.r16 { background: #0A1F12; }
+  .card.qf { background: #1A0F0A; }
+  .card.sf { background: #120A2A; }
+  .card.third { background: #0D1318; }
+  .card.final { background: linear-gradient(135deg, #2A0E00, #4D2000); border-color: #E65100; box-shadow: 0 0 20px rgba(230,81,0,0.25); }
+
+  .card-meta { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+  .round-badge { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.3px; }
+  .card.group .round-badge { background: #1565C020; color: #90CAF9; }
+  .card.r32 .round-badge { background: #0277BD20; color: #81D4FA; }
+  .card.r16 .round-badge { background: #2E7D3220; color: #A5D6A7; }
+  .card.qf .round-badge { background: #6D4C4120; color: #FFCCBC; }
+  .card.sf .round-badge { background: #4527A020; color: #CE93D8; }
+  .card.third .round-badge { background: #546E7A20; color: #CFD8DC; }
+  .card.final .round-badge { background: #E6510030; color: #FFE0B2; }
+
+  .group-tag { font-size: 9px; color: var(--muted); font-weight: 600; }
+  .card-body { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .teams { flex: 1; }
+  .team-row { display: flex; align-items: center; gap: 6px; margin: 2px 0; }
+  .team-name { font-size: 14px; font-weight: 700; line-height: 1.3; }
+  .card.final .team-name { font-size: 15px; }
+  .vs-dot { width: 3px; height: 3px; background: var(--muted); border-radius: 50%; margin: 3px 0 3px 3px; }
+  .score-badge { background: #0D2A0D; color: #69F0AE; padding: 1px 8px; border-radius: 5px; font-size: 12px; font-weight: 800; margin-left: 6px; }
+  .time-block { text-align: right; min-width: 56px; }
+  .time-num { font-size: 20px; font-weight: 800; color: var(--accent2); font-variant-numeric: tabular-nums; line-height: 1; }
+  .card.final .time-num { color: #FFD740; font-size: 22px; }
+  .time-label { font-size: 8px; color: var(--muted); margin-top: 2px; }
+  .venue-row { font-size: 9px; color: var(--muted); margin-top: 5px; }
+
+  /* BOTTOM NAV */
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #0A1628; border-top: 1px solid var(--border); display: flex; padding: 6px 0 calc(6px + var(--safe-bottom)); z-index: 200; }
+  .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 9px; color: var(--muted); cursor: pointer; padding: 4px; font-weight: 600; transition: color 0.15s; }
+  .nav-btn.active { color: var(--accent2); }
+  .nav-icon { font-size: 20px; }
+
+  /* EMPTY */
+  .empty { text-align: center; color: var(--muted); padding: 60px 20px; font-size: 13px; }
+
+
+  /* UPDATE INDICATOR */
+  .update-dot { width:7px;height:7px;background:#4CAF50;border-radius:50%;display:inline-block;margin-left:6px;animation:pulse 2s infinite; }
+  .score-live { background:#3A0A0A;color:#FF5252;padding:2px 8px;border-radius:5px;font-size:12px;font-weight:800;margin-left:6px;border:1px solid #C62828;animation:pulse 1s infinite; }
+  .score-badge { background:#1B3A1B;color:#69F0AE;padding:2px 8px;border-radius:5px;font-size:12px;font-weight:800;margin-left:6px; }
+  .last-update { font-size:9px;color:#2E7D32;text-align:center;padding:4px;margin-top:4px; }
+
+  /* INSTALL BANNER */
+  .install-banner { display: none; position: fixed; bottom: calc(56px + var(--safe-bottom)); left: 12px; right: 12px; background: #1565C0; border-radius: 12px; padding: 12px 14px; z-index: 300; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+  .install-banner.show { display: flex; align-items: center; gap: 10px; }
+  .install-banner-text { flex: 1; font-size: 12px; font-weight: 600; }
+  .install-btn { background: #fff; color: #1565C0; border: none; border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .install-close { color: rgba(255,255,255,0.7); font-size: 18px; cursor: pointer; padding: 0 4px; }
+
+  /* Highlight today match */
+  .card.today-match { box-shadow: 0 0 0 1px #FFD74060; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-top">
+    <span class="header-ball">⚽</span>
+    <div>
+      <div class="header-title">FIFA World Cup 2026™</div>
+      <div class="header-sub">ตารางแข่งขัน · เวลาไทย (ICT)</div>
+    </div>
+  </div>
+  <div class="header-info" id="headerInfo" style="margin-bottom:0">🕐 ET+11 ชม. · 11 มิ.ย. – 19 ก.ค. 2026 · 104 นัด · 48 ทีม</div>
+</div>
+    <div class="last-update" id="lastUpdate"></div>
+  </div>
+
+<!-- CONTROLS -->
+<div class="controls">
+  <input class="search-box" type="search" id="searchBox" placeholder="🔍  ค้นหาทีม / สนาม..." oninput="render()">
+  <div class="round-tabs" id="roundTabs"></div>
+</div>
+
+<!-- LIST -->
+<div class="list" id="matchList"></div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="nav-btn active" id="navAll" onclick="setNav('all')">
+    <span class="nav-icon">📅</span>ทั้งหมด
+  </div>
+  <div class="nav-btn" id="navToday" onclick="setNav('today')">
+    <span class="nav-icon">🔴</span>วันนี้
+  </div>
+  <div class="nav-btn" id="navFav" onclick="setNav('fav')">
+    <span class="nav-icon">⭐</span>ติดดาว
+  </div>
+  <div class="nav-btn" id="navKO" onclick="setNav('ko')">
+    <span class="nav-icon">🏆</span>น็อคเอาท์
+  </div>
+</div>
+
+<!-- INSTALL BANNER -->
+<div class="install-banner" id="installBanner">
+  <div class="install-banner-text">📲 ติดตั้งแอปบนหน้าจอหลักได้เลย!</div>
+  <button class="install-btn" id="installBtn">ติดตั้ง</button>
+  <span class="install-close" onclick="document.getElementById('installBanner').classList.remove('show')">✕</span>
+</div>
+
+<script>
+// ============================================================
+// DATA — เวลาทั้งหมดเป็น ET (Eastern Time)
+// ============================================================
+const RAW = [
+  // --- รอบแบ่งกลุ่ม ---
+  {d:"2026-06-11",t:"17:00",g:"A",t1:"🇲🇽 เม็กซิโก",t2:"🇿🇦 แอฟริกาใต้",sc:"2-0",v:"SoFi Stadium, Los Angeles",r:"group"},
+  {d:"2026-06-11",t:"20:00",g:"C",t1:"🇰🇷 เกาหลีใต้",t2:"🇨🇿 สาธารณรัฐเช็ก",sc:"2-1",v:"Lumen Field, Seattle",r:"group"},
+  {d:"2026-06-12",t:"15:00",g:"E",t1:"🇨🇦 แคนาดา",t2:"🇧🇦 บอสเนียฯ",sc:"",v:"BMO Field, Toronto",r:"group"},
+  {d:"2026-06-12",t:"21:00",g:"B",t1:"🇺🇸 สหรัฐอเมริกา",t2:"🇵🇾 ปารากวัย",sc:"",v:"MetLife Stadium, NJ",r:"group"},
+  {d:"2026-06-13",t:"15:00",g:"B",t1:"🇶🇦 กาตาร์",t2:"🇨🇭 สวิตเซอร์แลนด์",sc:"",v:"AT&T Stadium, Dallas",r:"group"},
+  {d:"2026-06-13",t:"18:00",g:"F",t1:"🇧🇷 บราซิล",t2:"🇲🇦 โมร็อกโก",sc:"",v:"MetLife Stadium, NJ",r:"group"},
+  {d:"2026-06-13",t:"21:00",g:"D",t1:"🇭🇹 เฮติ",t2:"🏴󠁧󠁢󠁳󠁣󠁴󠁿 สกอตแลนด์",sc:"",v:"Gillette Stadium, Boston",r:"group"},
+  {d:"2026-06-14",t:"00:00",g:"G",t1:"🇦🇺 ออสเตรเลีย",t2:"🇹🇷 ตุรกี",sc:"",v:"Estadio Azteca, Mexico City",r:"group"},
+  {d:"2026-06-14",t:"13:00",g:"H",t1:"🇩🇪 เยอรมนี",t2:"🇨🇼 กูราเซา",sc:"",v:"Arrowhead Stadium, Kansas City",r:"group"},
+  {d:"2026-06-14",t:"16:00",g:"I",t1:"🇳🇱 เนเธอร์แลนด์",t2:"🇯🇵 ญี่ปุ่น",sc:"",v:"Rose Bowl, Los Angeles",r:"group"},
+  {d:"2026-06-14",t:"19:00",g:"J",t1:"🇨🇮 ไอวอรี่โคสต์",t2:"🇪🇨 เอกวาดอร์",sc:"",v:"Hard Rock Stadium, Miami",r:"group"},
+  {d:"2026-06-14",t:"22:00",g:"K",t1:"🇸🇪 สวีเดน",t2:"🇹🇳 ตูนิเซีย",sc:"",v:"Levi's Stadium, San Francisco",r:"group"},
+  {d:"2026-06-15",t:"12:00",g:"L",t1:"🇪🇸 สเปน",t2:"🇨🇻 เคปเวิร์ด",sc:"",v:"Mercedes-Benz Stadium, Atlanta",r:"group"},
+  {d:"2026-06-15",t:"15:00",g:"A",t1:"🇧🇪 เบลเยียม",t2:"🇪🇬 อียิปต์",sc:"",v:"Lincoln Financial Field, Philadelphia",r:"group"},
+  {d:"2026-06-15",t:"18:00",g:"C",t1:"🇸🇦 ซาอุดีอาระเบีย",t2:"🇺🇾 อุรุกวัย",sc:"",v:"Lumen Field, Seattle",r:"group"},
+  {d:"2026-06-15",t:"21:00",g:"E",t1:"🇮🇷 อิหร่าน",t2:"🇸🇳 เซเนกัล",sc:"",v:"SoFi Stadium, Los Angeles",r:"group"},
+  {d:"2026-06-16",t:"12:00",g:"F",t1:"🇫🇷 ฝรั่งเศส",t2:"🇸🇳 เซเนกัล",sc:"",v:"MetLife Stadium, NJ",r:"group"},
+  {d:"2026-06-16",t:"15:00",g:"B",t1:"🇦🇷 อาร์เจนตินา",t2:"🇦🇱 แอลเบเนีย",sc:"",v:"Hard Rock Stadium, Miami",r:"group"},
+  {d:"2026-06-16",t:"18:00",g:"D",t1:"🇵🇹 โปรตุเกส",t2:"🇨🇩 คองโก DR",sc:"",v:"Rose Bowl, Los Angeles",r:"group"},
+  {d:"2026-06-16",t:"21:00",g:"G",t1:"🏴󠁧󠁢󠁥󠁮󠁧󠁿 อังกฤษ",t2:"🇴🇲 โอมาน",sc:"",v:"Arrowhead Stadium, Kansas City",r:"group"},
+  {d:"2026-06-17",t:"12:00",g:"H",t1:"🇨🇴 โคลอมเบีย",t2:"🇯🇴 จอร์แดน",sc:"",v:"Estadio Azteca, Mexico City",r:"group"},
+  {d:"2026-06-17",t:"15:00",g:"I",t1:"🇲🇽 เม็กซิโก",t2:"🇿🇼 ซิมบับเว",sc:"",v:"SoFi Stadium, Los Angeles",r:"group"},
+  {d:"2026-06-17",t:"18:00",g:"J",t1:"🇭🇷 โครเอเชีย",t2:"🇺🇿 อุซเบกิสถาน",sc:"",v:"Levi's Stadium, San Francisco",r:"group"},
+  {d:"2026-06-17",t:"21:00",g:"K",t1:"🇩🇰 เดนมาร์ก",t2:"🇻🇪 เวเนซุเอลา",sc:"",v:"Gillette Stadium, Boston",r:"group"},
+  {d:"2026-06-18",t:"12:00",g:"C",t1:"🇨🇿 สาธารณรัฐเช็ก",t2:"🇿🇦 แอฟริกาใต้",sc:"",v:"Mercedes-Benz Stadium, Atlanta",r:"group"},
+  {d:"2026-06-18",t:"15:00",g:"L",t1:"🇳🇱 เนเธอร์แลนด์",t2:"🇬🇦 กาบอง",sc:"",v:"Estadio Azteca, Mexico City",r:"group"},
+  {d:"2026-06-18",t:"18:00",g:"A",t1:"🇲🇽 เม็กซิโก",t2:"🇧🇪 เบลเยียม",sc:"",v:"SoFi Stadium, Los Angeles",r:"group"},
+  {d:"2026-06-18",t:"21:00",g:"E",t1:"🇨🇦 แคนาดา",t2:"🇮🇷 อิหร่าน",sc:"",v:"BMO Field, Toronto",r:"group"},
+  {d:"2026-06-19",t:"12:00",g:"F",t1:"🇧🇷 บราซิล",t2:"🇧🇾 เบลารุส",sc:"",v:"MetLife Stadium, NJ",r:"group"},
+  {d:"2026-06-19",t:"15:00",g:"B",t1:"🇺🇸 สหรัฐอเมริกา",t2:"🇶🇦 กาตาร์",sc:"",v:"MetLife Stadium, NJ",r:"group"},
+  {d:"2026-06-19",t:"18:00",g:"G",t1:"🇦🇺 ออสเตรเลีย",t2:"🏴󠁧󠁢󠁥󠁮󠁧󠁿 อังกฤษ",sc:"",v:"Lumen Field, Seattle",r:"group"},
+  {d:"2026-06-19",t:"21:00",g:"D",t1:"🏴󠁧󠁢󠁳󠁣󠁴󠁿 สกอตแลนด์",t2:"🇵🇹 โปรตุเกส",sc:"",v:"Lincoln Financial Field, Philadelphia",r:"group"},
+  {d:"2026-06-20",t:"12:00",g:"H",t1:"🇩🇪 เยอรมนี",t2:"🇨🇴 โคลอมเบีย",sc:"",v:"Arrowhead Stadium, Kansas City",r:"group"},
+  {d:"2026-06-20",t:"15:00",g:"I",t1:"🇯🇵 ญี่ปุ่น",t2:"🇿🇼 ซิมบับเว",sc:"",v:"Rose Bowl, Los Angeles",r:"group"},
+  {d:"2026-06-20",t:"18:00",g:"J",t1:"🇪🇨 เอกวาดอร์",t2:"🇺🇿 อุซเบกิสถาน",sc:"",v:"Estadio Azteca, Mexico City",r:"group"},
+  {d:"2026-06-20",t:"21:00",g:"K",t1:"🇸🇪 สวีเดน",t2:"🇩🇰 เดนมาร์ก",sc:"",v:"AT&T Stadium, Dallas",r:"group"},
+  {d:"2026-06-21",t:"12:00",g:"L",t1:"🇪🇸 สเปน",t2:"🇸🇦 ซาอุดีอาระเบีย",sc:"",v:"Mercedes-Benz Stadium, Atlanta",r:"group"},
+  {d:"2026-06-21",t:"15:00",g:"F",t1:"🇫🇷 ฝรั่งเศส",t2:"🇧🇾 เบลารุส",sc:"",v:"Hard Rock Stadium, Miami",r:"group"},
+  {d:"2026-06-21",t:"18:00",g:"C",t1:"🇺🇾 อุรุกวัย",t2:"🇰🇷 เกาหลีใต้",sc:"",v:"Gillette Stadium, Boston",r:"group"},
+  {d:"2026-06-21",t:"21:00",g:"A",t1:"🇪🇬 อียิปต์",t2:"🇿🇦 แอฟริกาใต้",sc:"",v:"Levi's Stadium, San Francisco",r:"group"},
+  {d:"2026-06-22",t:"12:00",g:"D",t1:"🇭🇹 เฮติ",t2:"🇨🇩 คองโก DR",sc:"",v:"Lincoln Financial Field, Philadelphia",r:"group"},
+  {d:"2026-06-22",t:"15:00",g:"E",t1:"🇧🇦 บอสเนียฯ",t2:"🇸🇳 เซเนกัล",sc:"",v:"BMO Field, Toronto",r:"group"},
+  {d:"2026-06-22",t:"18:00",g:"H",t1:"🇯🇴 จอร์แดน",t2:"🇨🇼 กูราเซา",sc:"",v:"SoFi Stadium, Los Angeles",r:"group"},
+  {d:"2026-06-22",t:"20:00",g:"G",t1:"🇳🇴 นอร์เวย์",t2:"🇸🇳 เซเนกัล",sc:"",v:"MetLife Stadium, NJ",r:"group"},
+  {d:"2026-06-23",t:"12:00",g:"I",t1:"🇲🇽 เม็กซิโก",t2:"🇳🇱 เนเธอร์แลนด์",sc:"",v:"Arrowhead Stadium, Kansas City",r:"group"},
+  {d:"2026-06-23",t:"15:00",g:"B",t1:"🇨🇭 สวิตเซอร์แลนด์",t2:"🇦🇷 อาร์เจนตินา",sc:"",v:"Rose Bowl, Los Angeles",r:"group"},
+  {d:"2026-06-23",t:"18:00",g:"J",t1:"🇭🇷 โครเอเชีย",t2:"🇨🇮 ไอวอรี่โคสต์",sc:"",v:"Estadio Azteca, Mexico City",r:"group"},
+  {d:"2026-06-23",t:"21:00",g:"K",t1:"🇹🇳 ตูนิเซีย",t2:"🇻🇪 เวเนซุเอลา",sc:"",v:"AT&T Stadium, Dallas",r:"group"},
+  {d:"2026-06-24",t:"12:00",g:"L",t1:"🇨🇻 เคปเวิร์ด",t2:"🇬🇦 กาบอง",sc:"",v:"Mercedes-Benz Stadium, Atlanta",r:"group"},
+  {d:"2026-06-24",t:"15:00",g:"F",t1:"🇲🇦 โมร็อกโก",t2:"🇧🇾 เบลารุส",sc:"",v:"Hard Rock Stadium, Miami",r:"group"},
+  {d:"2026-06-24",t:"18:00",g:"C",t1:"🇰🇷 เกาหลีใต้",t2:"🇸🇦 ซาอุดีอาระเบีย",sc:"",v:"Gillette Stadium, Boston",r:"group"},
+  {d:"2026-06-24",t:"21:00",g:"A",t1:"🇲🇽 เม็กซิโก",t2:"🇪🇬 อียิปต์",sc:"",v:"SoFi Stadium, Los Angeles",r:"group"},
+  {d:"2026-06-25",t:"12:00",g:"E",t1:"🇨🇦 แคนาดา",t2:"🇸🇳 เซเนกัล",sc:"",v:"BMO Field, Toronto",r:"group"},
+  {d:"2026-06-25",t:"16:00",g:"I",t1:"🇪🇨 เอกวาดอร์",t2:"🇩🇪 เยอรมนี",sc:"",v:"Lumen Field, Seattle",r:"group"},
+  {d:"2026-06-25",t:"19:00",g:"D",t1:"🏴󠁧󠁢󠁳󠁣󠁴󠁿 สกอตแลนด์",t2:"🇨🇩 คองโก DR",sc:"",v:"Lincoln Financial Field, Philadelphia",r:"group"},
+  {d:"2026-06-25",t:"22:00",g:"G",t1:"🏴󠁧󠁢󠁥󠁮󠁧󠁿 อังกฤษ",t2:"🇹🇷 ตุรกี",sc:"",v:"Arrowhead Stadium, Kansas City",r:"group"},
+  {d:"2026-06-26",t:"12:00",g:"H",t1:"🇨🇴 โคลอมเบีย",t2:"🇨🇼 กูราเซา",sc:"",v:"MetLife Stadium, NJ",r:"group"},
+  {d:"2026-06-26",t:"15:00",g:"B",t1:"🇺🇸 สหรัฐอเมริกา",t2:"🇨🇭 สวิตเซอร์แลนด์",sc:"",v:"Rose Bowl, Los Angeles",r:"group"},
+  {d:"2026-06-26",t:"18:00",g:"J",t1:"🇨🇮 ไอวอรี่โคสต์",t2:"🇺🇿 อุซเบกิสถาน",sc:"",v:"AT&T Stadium, Dallas",r:"group"},
+  {d:"2026-06-26",t:"21:00",g:"K",t1:"🇸🇪 สวีเดน",t2:"🇻🇪 เวเนซุเอลา",sc:"",v:"Estadio Azteca, Mexico City",r:"group"},
+  {d:"2026-06-27",t:"12:00",g:"L",t1:"🇪🇸 สเปน",t2:"🇬🇦 กาบอง",sc:"",v:"Mercedes-Benz Stadium, Atlanta",r:"group"},
+  {d:"2026-06-27",t:"15:00",g:"F",t1:"🇫🇷 ฝรั่งเศส",t2:"🇲🇦 โมร็อกโก",sc:"",v:"Hard Rock Stadium, Miami",r:"group"},
+  {d:"2026-06-27",t:"17:30",g:"D",t1:"🇵🇦 ปานามา",t2:"🏴󠁧󠁢󠁥󠁮󠁧󠁿 อังกฤษ",sc:"",v:"Lincoln Financial Field, Philadelphia",r:"group"},
+  {d:"2026-06-27",t:"21:00",g:"C",t1:"🇺🇾 อุรุกวัย",t2:"🇨🇿 สาธารณรัฐเช็ก",sc:"",v:"Gillette Stadium, Boston",r:"group"},
+  {d:"2026-06-28",t:"12:00",g:"A",t1:"🇧🇪 เบลเยียม",t2:"🇿🇦 แอฟริกาใต้",sc:"",v:"SoFi Stadium, Los Angeles",r:"group"},
+  {d:"2026-06-28",t:"15:00",g:"E",t1:"🇧🇦 บอสเนียฯ",t2:"🇮🇷 อิหร่าน",sc:"",v:"BMO Field, Toronto",r:"group"},
+  {d:"2026-06-28",t:"18:00",g:"B",t1:"🇦🇷 อาร์เจนตินา",t2:"🇵🇾 ปารากวัย",sc:"",v:"Lumen Field, Seattle",r:"group"},
+  {d:"2026-06-28",t:"21:00",g:"H",t1:"🇩🇪 เยอรมนี",t2:"🇯🇴 จอร์แดน",sc:"",v:"Arrowhead Stadium, Kansas City",r:"group"},
+  {d:"2026-06-29",t:"12:00",g:"G",t1:"🇹🇷 ตุรกี",t2:"🇴🇲 โอมาน",sc:"",v:"MetLife Stadium, NJ",r:"group"},
+  {d:"2026-06-29",t:"15:00",g:"I",t1:"🇯🇵 ญี่ปุ่น",t2:"🇳🇱 เนเธอร์แลนด์",sc:"",v:"Rose Bowl, Los Angeles",r:"group"},
+  {d:"2026-06-29",t:"18:00",g:"J",t1:"🇭🇷 โครเอเชีย",t2:"🇪🇨 เอกวาดอร์",sc:"",v:"AT&T Stadium, Dallas",r:"group"},
+  {d:"2026-06-29",t:"21:00",g:"K",t1:"🇹🇳 ตูนิเซีย",t2:"🇩🇰 เดนมาร์ก",sc:"",v:"Estadio Azteca, Mexico City",r:"group"},
+  {d:"2026-06-30",t:"12:00",g:"L",t1:"🇪🇸 สเปน",t2:"🇳🇱 เนเธอร์แลนด์",sc:"",v:"Mercedes-Benz Stadium, Atlanta",r:"group"},
+  {d:"2026-06-30",t:"15:00",g:"F",t1:"🇧🇷 บราซิล",t2:"🇫🇷 ฝรั่งเศส",sc:"",v:"Hard Rock Stadium, Miami",r:"group"},
+  {d:"2026-06-30",t:"17:00",g:"D",t1:"🇵🇹 โปรตุเกส",t2:"🏴󠁧󠁢󠁳󠁣󠁴󠁿 สกอตแลนด์",sc:"",v:"Gillette Stadium, Boston",r:"group"},
+  {d:"2026-06-30",t:"17:00",g:"C",t1:"🇺🇾 อุรุกวัย",t2:"🇸🇦 ซาอุดีอาระเบีย",sc:"",v:"Lumen Field, Seattle",r:"group"},
+  // --- รอบ 32 ทีม ---
+  {d:"2026-07-01",t:"12:00",g:"",t1:"อันดับ 1A vs อันดับ 3",t2:"",sc:"",v:"Mercedes-Benz Stadium, Atlanta",r:"r32"},
+  {d:"2026-07-01",t:"15:00",g:"",t1:"อันดับ 1C vs อันดับ 3",t2:"",sc:"",v:"Gillette Stadium, Boston",r:"r32"},
+  {d:"2026-07-01",t:"16:00",g:"",t1:"อันดับ 1G vs อันดับ 3",t2:"",sc:"",v:"Lumen Field, Seattle",r:"r32"},
+  {d:"2026-07-01",t:"20:00",g:"",t1:"อันดับ 1D vs อันดับ 3",t2:"",sc:"",v:"Levi's Stadium, San Francisco",r:"r32"},
+  {d:"2026-07-02",t:"12:00",g:"",t1:"อันดับ 1B vs อันดับ 3",t2:"",sc:"",v:"SoFi Stadium, Los Angeles",r:"r32"},
+  {d:"2026-07-02",t:"15:00",g:"",t1:"อันดับ 1F vs อันดับ 3",t2:"",sc:"",v:"Hard Rock Stadium, Miami",r:"r32"},
+  {d:"2026-07-02",t:"18:00",g:"",t1:"อันดับ 1H vs อันดับ 3",t2:"",sc:"",v:"Arrowhead Stadium, Kansas City",r:"r32"},
+  {d:"2026-07-02",t:"21:00",g:"",t1:"อันดับ 1E vs อันดับ 3",t2:"",sc:"",v:"BMO Field, Toronto",r:"r32"},
+  {d:"2026-07-03",t:"12:00",g:"",t1:"อันดับ 2A vs 2B",t2:"",sc:"",v:"MetLife Stadium, NJ",r:"r32"},
+  {d:"2026-07-03",t:"15:00",g:"",t1:"อันดับ 2C vs 2D",t2:"",sc:"",v:"Estadio Azteca, Mexico City",r:"r32"},
+  {d:"2026-07-03",t:"18:00",g:"",t1:"อันดับ 2E vs 2F",t2:"",sc:"",v:"AT&T Stadium, Dallas",r:"r32"},
+  {d:"2026-07-03",t:"21:00",g:"",t1:"อันดับ 2G vs 2H",t2:"",sc:"",v:"Rose Bowl, Los Angeles",r:"r32"},
+  {d:"2026-07-04",t:"12:00",g:"",t1:"อันดับ 2I vs 2J",t2:"",sc:"",v:"Lincoln Financial Field, Philadelphia",r:"r32"},
+  {d:"2026-07-04",t:"15:00",g:"",t1:"อันดับ 2K vs 2L",t2:"",sc:"",v:"Lumen Field, Seattle",r:"r32"},
+  {d:"2026-07-04",t:"18:00",g:"",t1:"อันดับ 1I vs 1J",t2:"",sc:"",v:"Gillette Stadium, Boston",r:"r32"},
+  {d:"2026-07-04",t:"21:00",g:"",t1:"อันดับ 1K vs 1L",t2:"",sc:"",v:"Hard Rock Stadium, Miami",r:"r32"},
+  // --- รอบ 16 ทีม ---
+  {d:"2026-07-05",t:"16:00",g:"",t1:"ผู้ชนะคู่ที่ 65 vs 66",t2:"",sc:"",v:"Mercedes-Benz Stadium, Atlanta",r:"r16"},
+  {d:"2026-07-05",t:"20:00",g:"",t1:"ผู้ชนะคู่ที่ 67 vs 68",t2:"",sc:"",v:"Estadio Azteca, Mexico City",r:"r16"},
+  {d:"2026-07-06",t:"16:00",g:"",t1:"ผู้ชนะคู่ที่ 69 vs 70",t2:"",sc:"",v:"SoFi Stadium, Los Angeles",r:"r16"},
+  {d:"2026-07-06",t:"20:00",g:"",t1:"ผู้ชนะคู่ที่ 71 vs 72",t2:"",sc:"",v:"MetLife Stadium, NJ",r:"r16"},
+  {d:"2026-07-07",t:"16:00",g:"",t1:"ผู้ชนะคู่ที่ 73 vs 74",t2:"",sc:"",v:"Hard Rock Stadium, Miami",r:"r16"},
+  {d:"2026-07-07",t:"20:00",g:"",t1:"ผู้ชนะคู่ที่ 75 vs 76",t2:"",sc:"",v:"Levi's Stadium, San Francisco",r:"r16"},
+  {d:"2026-07-08",t:"16:00",g:"",t1:"ผู้ชนะคู่ที่ 77 vs 78",t2:"",sc:"",v:"Rose Bowl, Los Angeles",r:"r16"},
+  {d:"2026-07-08",t:"20:00",g:"",t1:"ผู้ชนะคู่ที่ 79 vs 80",t2:"",sc:"",v:"AT&T Stadium, Dallas",r:"r16"},
+  // --- รอบ 8 ทีม ---
+  {d:"2026-07-10",t:"15:00",g:"",t1:"QF1 · ผู้ชนะ R16",t2:"",sc:"",v:"Arrowhead Stadium, Kansas City",r:"qf"},
+  {d:"2026-07-10",t:"19:00",g:"",t1:"QF2 · ผู้ชนะ R16",t2:"",sc:"",v:"Lumen Field, Seattle",r:"qf"},
+  {d:"2026-07-11",t:"15:00",g:"",t1:"QF3 · ผู้ชนะ R16",t2:"",sc:"",v:"MetLife Stadium, NJ",r:"qf"},
+  {d:"2026-07-11",t:"19:00",g:"",t1:"QF4 · ผู้ชนะ R16",t2:"",sc:"",v:"SoFi Stadium, Los Angeles",r:"qf"},
+  // --- รอบรองชนะเลิศ ---
+  {d:"2026-07-14",t:"19:00",g:"",t1:"🔥 รอบรองชนะเลิศ 1",t2:"",sc:"",v:"MetLife Stadium, NJ",r:"sf"},
+  {d:"2026-07-15",t:"19:00",g:"",t1:"🔥 รอบรองชนะเลิศ 2",t2:"",sc:"",v:"Rose Bowl, Los Angeles",r:"sf"},
+  // --- ชิงที่ 3 ---
+  {d:"2026-07-18",t:"15:00",g:"",t1:"🥉 ชิงอันดับ 3",t2:"",sc:"",v:"AT&T Stadium, Dallas",r:"third"},
+  // --- นัดชิงชนะเลิศ ---
+  {d:"2026-07-19",t:"15:00",g:"",t1:"🏆 นัดชิงชนะเลิศ",t2:"",sc:"",v:"MetLife Stadium, New York/New Jersey",r:"final"},
+];
+
+// ET → Thai (ICT = ET+11)
+function etToThai(dateStr, timeET) {
+  const [h,m] = timeET.split(':').map(Number);
+  const base = new Date(dateStr + 'T00:00:00Z');
+  const thaiMs = base.getTime() + (h + 11) * 3600000 + m * 60000;
+  const d = new Date(thaiMs);
+  const days = ['อา','จ','อ','พ','พฤ','ศ','ส'];
+  const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  return {
+    timeStr: String(d.getUTCHours()).padStart(2,'0') + ':' + String(d.getUTCMinutes()).padStart(2,'0'),
+    dateKey: d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0'),
+    dateLabel: days[d.getUTCDay()] + ' ' + d.getUTCDate() + ' ' + months[d.getUTCMonth()],
+    sortKey: thaiMs,
+  };
+}
+
+// Prep matches
+const MATCHES = RAW.map((m,i) => ({ ...m, id: i, ...etToThai(m.d, m.t) }));
+
+// State
+let activeRound = 'all';
+let navMode = 'all';
+let favs = new Set(JSON.parse(localStorage.getItem('favs') || '[]'));
+
+// Round labels
+const ROUND_LABELS = {
+  all: 'ทั้งหมด', group: 'กลุ่ม', r32: 'รอบ 32', r16: 'รอบ 16', qf: 'รอบ 8', sf: 'รอบ 4', third: 'ชิงที่ 3', final: '🏆 ชิง'
+};
+const KO_ROUNDS = ['r32','r16','qf','sf','third','final'];
+
+function getTodayKey() {
+  const d = new Date();
+  // Thai time: UTC+7
+  const thai = new Date(d.getTime() + 7*3600000);
+  return thai.getUTCFullYear() + '-' + String(thai.getUTCMonth()+1).padStart(2,'0') + '-' + String(thai.getUTCDate()).padStart(2,'0');
+}
+
+function buildTabs() {
+  const tabs = document.getElementById('roundTabs');
+  tabs.innerHTML = Object.entries(ROUND_LABELS).map(([k,v]) =>
+    `<div class="tab${k===activeRound?' active':''}" onclick="setRound('${k}')">${v}</div>`
+  ).join('');
+}
+
+function setRound(r) { activeRound = r; buildTabs(); render(); }
+
+function setNav(mode) {
+  navMode = mode;
+  ['navAll','navToday','navFav','navKO'].forEach((id,i) => {
+    document.getElementById(id).classList.toggle('active', ['all','today','fav','ko'][i] === mode);
+  });
+  if (mode === 'ko') { setRound('r32'); return; }
+  if (mode !== 'ko' && KO_ROUNDS.includes(activeRound)) setRound('all');
+  render();
+}
+
+function toggleFav(id) {
+  if (favs.has(id)) favs.delete(id); else favs.add(id);
+  localStorage.setItem('favs', JSON.stringify([...favs]));
+  render();
+}
+
+function render() {
+  const query = (document.getElementById('searchBox').value || '').toLowerCase();
+  const todayKey = getTodayKey();
+
+  let list = MATCHES.filter(m => {
+    if (navMode === 'today' && m.dateKey !== todayKey) return false;
+    if (navMode === 'fav' && !favs.has(m.id)) return false;
+    if (navMode === 'ko' && !KO_ROUNDS.includes(m.r)) return false;
+    if (activeRound !== 'all' && m.r !== activeRound) return false;
+    if (query && !(m.t1+m.t2+m.v).toLowerCase().includes(query)) return false;
+    return true;
+  });
+
+  list.sort((a,b) => a.sortKey - b.sortKey);
+
+  // Group by Thai date
+  const groups = {};
+  list.forEach(m => {
+    if (!groups[m.dateKey]) groups[m.dateKey] = { label: m.dateLabel, matches: [] };
+    groups[m.dateKey].matches.push(m);
+  });
+
+  const el = document.getElementById('matchList');
+  if (!list.length) {
+    el.innerHTML = '<div class="empty">ไม่พบการแข่งขัน<br><small style="font-size:10px;margin-top:4px;display:block">ลองเปลี่ยนตัวกรอง หรือค้นหาใหม่</small></div>';
+    return;
+  }
+
+  const roundNameMap = {group:'รอบแบ่งกลุ่ม',r32:'รอบ 32 ทีม',r16:'รอบ 16 ทีม',qf:'รอบ 8 ทีม',sf:'รอบรองชนะเลิศ',third:'ชิงอันดับ 3',final:'🏆 นัดชิงชนะเลิศ'};
+
+  el.innerHTML = Object.entries(groups).map(([dk, g]) => {
+    const isToday = dk === todayKey;
+    const dateHtml = `
+      <div class="date-header">
+        <div class="date-line"></div>
+        <div style="display:flex;align-items:center;gap:6px">
+          ${isToday ? '<span class="live-badge">วันนี้</span>' : ''}
+          <span class="date-label${isToday?' today':''}">${g.label}</span>
+        </div>
+        <div class="date-line"></div>
+      </div>`;
+
+    const cards = g.matches.map(m => {
+      const isFav = favs.has(m.id);
+      const rn = roundNameMap[m.r] || m.r;
+      return `
+        <div class="card ${m.r}${isToday?' today-match':''}" onclick="toggleFav(${m.id})">
+          <div class="card-meta">
+            <span class="round-badge">${rn}${m.g?' · กลุ่ม '+m.g:''}</span>
+            <span style="margin-left:auto;font-size:16px;opacity:${isFav?1:0.25}">${isFav?'⭐':'☆'}</span>
+          </div>
+          <div class="card-body">
+            <div class="teams">
+              <div class="team-name">${m.t1}${m.sc?`<span class="score-badge${m.liveStatus?' score-live':''}">${m.sc} ${m.liveStatus||''}</span>`:''}</div>
+              ${m.t2 ? `<div class="vs-dot"></div><div class="team-name">${m.t2}</div>` : ''}
+              <div class="venue-row">📍 ${m.v}</div>
+            </div>
+            <div class="time-block">
+              <div class="time-num">${m.timeStr}</div>
+              <div class="time-label">เวลาไทย</div>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+
+    return dateHtml + cards;
+  }).join('');
+}
+
+
+// ============================================================
+// LIVE SCORES — football-data.org API (อัพเดตอัตโนมัติ)
+// ============================================================
+const API_KEY = '233ab20f71304a218b0953fd549a7f8d';
+const API_URL = '/.netlify/functions/scores'; // proxy ผ่าน Netlify Function
+
+// Map ชื่อทีมภาษาอังกฤษ → ภาษาไทยในแอป (สำหรับ match ง่ายขึ้น)
+const TEAM_MAP = {
+  'Mexico':'เม็กซิโก','South Africa':'แอฟริกาใต้','Korea Republic':'เกาหลีใต้',
+  'Czechia':'สาธารณรัฐเช็ก','Czech Republic':'สาธารณรัฐเช็ก','Canada':'แคนาดา',
+  'Bosnia and Herzegovina':'บอสเนียฯ','USA':'สหรัฐอเมริกา','United States':'สหรัฐอเมริกา',
+  'Paraguay':'ปารากวัย','Qatar':'กาตาร์','Switzerland':'สวิตเซอร์แลนด์',
+  'Brazil':'บราซิล','Morocco':'โมร็อกโก','Haiti':'เฮติ','Scotland':'สกอตแลนด์',
+  'Australia':'ออสเตรเลีย','Türkiye':'ตุรกี','Turkey':'ตุรกี',
+  'Germany':'เยอรมนี','Curaçao':'กูราเซา','Netherlands':'เนเธอร์แลนด์',
+  'Japan':'ญี่ปุ่น',"Côte d'Ivoire":'ไอวอรี่โคสต์','Ecuador':'เอกวาดอร์',
+  'Sweden':'สวีเดน','Tunisia':'ตูนิเซีย','Spain':'สเปน','Cape Verde':'เคปเวิร์ด',
+  'Belgium':'เบลเยียม','Egypt':'อียิปต์','Saudi Arabia':'ซาอุดีอาระเบีย',
+  'Uruguay':'อุรุกวัย','Iran':'อิหร่าน','Senegal':'เซเนกัล','France':'ฝรั่งเศส',
+  'Argentina':'อาร์เจนตินา','Albania':'แอลเบเนีย','Portugal':'โปรตุเกส',
+  'DR Congo':'คองโก DR','England':'อังกฤษ','Oman':'โอมาน','Colombia':'โคลอมเบีย',
+  'Jordan':'จอร์แดน','Zimbabwe':'ซิมบับเว','Croatia':'โครเอเชีย',
+  'Uzbekistan':'อุซเบกิสถาน','Denmark':'เดนมาร์ก','Venezuela':'เวเนซุเอลา',
+  'Gabon':'กาบอง','Belarus':'เบลารุส','Norway':'นอร์เวย์','Panama':'ปานามา',
+};
+
+// สถานะแมตช์ภาษาไทย
+const STATUS_MAP = {
+  'SCHEDULED':'⏰ ยังไม่เริ่ม','TIMED':'⏰ ยังไม่เริ่ม',
+  'IN_PLAY':'🔴 กำลังแข่ง','PAUSED':'⏸ พักครึ่ง',
+  'FINISHED':'✅ จบแล้ว','SUSPENDED':'⚠️ หยุด',
+  'POSTPONED':'📅 เลื่อน','CANCELLED':'❌ ยกเลิก',
+};
+
+let apiCallCount = 0;
+let lastFetch = 0;
+
+async function loadScores() {
+  // Rate limit: ไม่เรียกถี่กว่า 30 วินาที
+  const now = Date.now();
+  if (now - lastFetch < 30000) return;
+  lastFetch = now;
+  apiCallCount++;
+
+  try {
+    const res = await fetch(API_URL); // key อยู่ใน Netlify Function แล้ว
+
+    if (!res.ok) {
+      console.warn('API error:', res.status);
+      // ถ้า 429 = เกิน limit
+      if (res.status === 429) {
+        const el = document.getElementById('lastUpdate');
+        if (el) el.textContent = '⚠️ API limit — ลองใหม่ภายหลัง';
+      }
+      return;
+    }
+
+    const data = await res.json();
+    const apiMatches = data.matches || [];
+
+    let updatedCount = 0;
+
+    apiMatches.forEach(am => {
+      const homeEn = am.homeTeam?.name || '';
+      const awayEn = am.awayTeam?.name || '';
+      const homeTh = TEAM_MAP[homeEn] || homeEn;
+      const awayTh = TEAM_MAP[awayEn] || awayEn;
+      const status = am.status;
+      const homeScore = am.score?.fullTime?.home;
+      const awayScore = am.score?.fullTime?.away;
+      const homeHT = am.score?.halfTime?.home;
+      const awayHT = am.score?.halfTime?.away;
+      const minute = am.minute;
+
+      // หา match ที่ตรงกันใน MATCHES array
+      const match = MATCHES.find(m => {
+        const t1clean = m.t1.replace(/[🇦-🇿󠁧󠁢󠁳󠁣󠁴󠁿🏴]/gu, '').trim();
+        const t2clean = m.t2.replace(/[🇦-🇿󠁧󠁢󠁳󠁣󠁴󠁿🏴]/gu, '').trim();
+        return (t1clean.includes(homeTh) || t1clean.includes(awayTh)) &&
+               (t2clean.includes(homeTh) || t2clean.includes(awayTh) || m.t2 === '');
+      });
+
+      if (!match) return;
+
+      // อัพเดตสกอร์และสถานะ
+      if (status === 'IN_PLAY' || status === 'PAUSED') {
+        const htScore = (homeHT !== null && awayHT !== null) ? ` (${homeHT}-${awayHT})` : '';
+        const minStr = minute ? ` ${minute}'` : '';
+        match.sc = `${homeScore ?? 0}-${awayScore ?? 0}`;
+        match.liveStatus = `🔴${minStr}`;
+        updatedCount++;
+      } else if (status === 'FINISHED') {
+        if (homeScore !== null && awayScore !== null) {
+          match.sc = `${homeScore}-${awayScore}`;
+          match.liveStatus = '✅';
+          updatedCount++;
+        }
+      } else {
+        match.liveStatus = '';
+      }
+    });
+
+    // อัพเดต UI
+    const nowTH = new Date().toLocaleString('th-TH', {
+      day:'numeric', month:'short', hour:'2-digit', minute:'2-digit', timeZone:'Asia/Bangkok'
+    });
+    const el = document.getElementById('lastUpdate');
+    if (el) el.textContent = `🔄 อัพเดต: ${nowTH} · ${updatedCount} นัด`;
+
+    render();
+    console.log(`API call #${apiCallCount}: ${updatedCount} matches updated`);
+
+  } catch(e) {
+    console.warn('loadScores error:', e.message);
+    const el = document.getElementById('lastUpdate');
+    if (el) el.textContent = '⚠️ โหลดผลไม่ได้ ตรวจสอบเน็ต';
+  }
+}
+
+// Init
+buildTabs();
+render();
+
+// Update header with match count
+loadScores(); // โหลดทันทีตอนเปิดแอป
+setInterval(loadScores, 60000); // refresh ทุก 60 วิ
+
+// โหลดใหม่ทุกครั้งที่กลับมาเปิดแอป (เช่น สลับ app แล้วกลับมา)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') loadScores();
+});
+document.getElementById('headerInfo').textContent =
+  `🕐 ET+11 ชม. · 11 มิ.ย. – 19 ก.ค. 2026 · ${RAW.length} นัด · 48 ทีม`;
+
+// PWA Install
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  setTimeout(() => document.getElementById('installBanner').classList.add('show'), 2000);
+});
+document.getElementById('installBtn').addEventListener('click', () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => {
+      deferredPrompt = null;
+      document.getElementById('installBanner').classList.remove('show');
+    });
+  }
+});
+
+// Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
